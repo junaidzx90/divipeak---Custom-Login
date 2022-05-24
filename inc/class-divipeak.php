@@ -86,8 +86,8 @@ class Divipeak {
 			wp_enqueue_script( 'wp-color-picker');
 			wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . "admin/css/divipeak-admin.css", array(), $this->version, 'all' );
 
-			wp_enqueue_script( 'wp-color-picker-alpha', plugin_dir_url( __FILE__ ) . 'admin/js/wp-color-picker-alpha.js', array( 'wp-color-picker' ), $this->version, true);
-			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'admin/js/divipeak-admin.js', array( 'jquery', 'wp-color-picker' ), $this->version, true);
+			wp_enqueue_script( 'color-picker-alpha', plugin_dir_url( __FILE__ ) . 'admin/js/wp-color-picker-alpha.js', array( 'wp-color-picker' ), $this->version, true);
+			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'admin/js/divipeak-admin.js', array( 'jquery', 'color-picker-alpha' ), $this->version, true);
         }
 	}
 
