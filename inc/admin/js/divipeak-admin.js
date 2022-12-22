@@ -66,4 +66,72 @@ jQuery(function ($) {
   $('#dpcl_link_hover_color').wpColorPicker();
   $('#dpcl_input_focus_border_color').wpColorPicker();
   $('#dpcl_input_focus_shadow_color').wpColorPicker();
+
+  // Bg image
+	function uploadBg() {
+		var imgfile, selectedFile;
+		// If the frame already exists, re-open it.
+		if (imgfile) {
+			imgfile.open();
+			return;
+		}
+		//Extend the wp.media object
+		imgfile = wp.media.frames.file_frame = wp.media({
+			title: 'Choose an image',
+			button: {
+				text: 'Select'
+			},
+			multiple: false
+		});
+
+		//When a file is selected, grab the URL and set it as the text field's value
+		imgfile.on('select', function () {
+			selectedFile = imgfile.state().get('selection').first().toJSON();
+			
+			$(document).find(".bg-preview").css("background-image", `url(${selectedFile.url})`)
+			$(document).find("#dpcl_bg_image").val(selectedFile.url)
+		});
+
+		//Open the uploader dialog
+		imgfile.open();
+	}
+
+	$(document).on("click", "#upbg", function (e) {
+		e.preventDefault();
+		uploadBg()
+	})
+
+	$(document).on("change", "#dpcl_bg_checkbox", function () {
+		if ($(this).is(':checked')) {
+			$(".bg_settings").removeClass("dnone");
+		} else {
+			$(".bg_settings").addClass("dnone");
+		}
+	});
+
+	var $color1 = $("#dpcl_bg_color_1").val();
+	var $color2 = $("#dpcl_bg_color_2").val();
+	var $deg = 45;
+
+	function applygr() {
+		$(document).find(".preview-color").css("background", `linear-gradient(${$deg}deg, ${$color1}, ${$color2})`)
+	}
+
+  $('#dpcl_bg_color_1').wpColorPicker({
+    change: function (event, ui) {
+      $color1 = event.target.value;
+		  applygr()
+    }
+  });
+  $('#dpcl_bg_color_2').wpColorPicker({
+    change: function (event, ui) {
+      $color2 = event.target.value;
+		  applygr()
+    }
+  });
+  
+	$(document).on("input", "#dpcl_bg_deg", function () {
+		$deg = $(this).val();
+		applygr()
+	});
 });

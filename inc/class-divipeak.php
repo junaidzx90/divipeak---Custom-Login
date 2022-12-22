@@ -60,7 +60,7 @@ class Divipeak {
 		if ( defined( 'DIVIPEAK_VERSION' ) ) {
 			$this->version = DIVIPEAK_VERSION;
 		} else {
-			$this->version = '1.0.0';
+			$this->version = '1.0.1';
 		}
 		$this->plugin_name = 'divipeak';
 
@@ -99,6 +99,15 @@ class Divipeak {
 		// Logo URL
 		add_settings_field( 'dpcl_custom_logo', 'Custom Logo', [$this, 'dpcl_custom_logo_cb'], 'dpcl_general_opt_page','dpcl_general_opt_section' );
 		register_setting( 'dpcl_general_opt_section', 'dpcl_custom_logo' );
+		// Enable bg image
+		add_settings_field( 'dpcl_bg_switch', 'Background image', [$this, 'dpcl_bg_switch_cb'], 'dpcl_general_opt_page', 'dpcl_general_opt_section' );
+		register_setting( 'dpcl_general_opt_section', 'dpcl_bg_switch' );
+		register_setting( 'dpcl_general_opt_section', 'dpcl_bg_image' );
+		register_setting( 'dpcl_general_opt_section', 'dpcl_bg_position' );
+		register_setting( 'dpcl_general_opt_section', 'dpcl_bg_color_1' );
+		register_setting( 'dpcl_general_opt_section', 'dpcl_bg_color_2' );
+		register_setting( 'dpcl_general_opt_section', 'dpcl_bg_deg' );
+
 		// Logo redirection URL
 		add_settings_field( 'dpcl_logo_redirection', 'Logo redirection URL', [$this, 'dpcl_logo_redirection_cb'], 'dpcl_general_opt_page','dpcl_general_opt_section' );
 		register_setting( 'dpcl_general_opt_section', 'dpcl_logo_redirection' );
@@ -176,6 +185,68 @@ class Divipeak {
         }
         echo '<input type="hidden" name="dpcl_custom_logo" id="dpcl_custom_logo" class="widefat" value="'.get_option('dpcl_custom_logo').'">';
 	}
+	
+	function dpcl_bg_switch_cb(){
+		wp_enqueue_media();
+
+		if(isset($_GET['page']) && $_GET['page'] === 'coming-soon' && isset($_GET['action']) && $_GET['action'] === 'removebg' ){
+			delete_option( 'dpcl_bg_image' );
+			wp_safe_redirect( admin_url('options-general.php?page=coming-soon') );
+			exit;
+		}
+		echo '<input '.((get_option('dpcl_bg_switch') === 'on')?'checked': '').' id="dpcl_bg_checkbox" name="dpcl_bg_switch" class="switch-input" type="checkbox"/>
+		<label for="dpcl_bg_checkbox" class="switch"></label>';
+
+		if(get_option('dpcl_bg_switch') !== 'on'){
+			delete_option( 'dpcl_bg_image' );
+			delete_option( 'dpcl_bg_position' );
+			delete_option( 'dpcl_bg_color_1' );
+			delete_option( 'dpcl_bg_color_2' );
+			delete_option( 'dpcl_bg_deg' );
+		}
+		$bgimg = ((get_option("dpcl_bg_image")) ? get_option("dpcl_bg_image") : 'https://via.placeholder.com/380x280');
+		?>
+		<div class="bg_settings <?php echo ((get_option('dpcl_bg_switch') !== 'on')?'dnone': '') ?>">
+			<div class="bg_row">
+				<div style="background-image: url(<?php echo $bgimg ?>)" class="bg-preview"></div>
+				<button class="button-secondary" id="upbg">Upload an image</button>
+				<?php if(get_option("dpcl_bg_image")) { ?>
+				<a style="color: red; border-color: red" href="<?php echo admin_url('options-general.php?page=coming-soon&action=removebg') ?>" class="button-secondary">Remove</a>
+				<?php } ?>
+				<input type="hidden" name="dpcl_bg_image" id="dpcl_bg_image" value="<?php echo $bgimg ?>">
+			</div>
+			<div class="bg_row">
+				<?php $selectedpos = get_option( 'dpcl_bg_position' ) ?>
+				<label for="bgpos">Background position</label>
+				<select name="dpcl_bg_position" id="bgpos">
+					<option <?php echo (($selectedpos === 'bottom') ? 'selected': '') ?> value="bottom">Bottom</option>
+					<option <?php echo (($selectedpos === 'center') ? 'selected': '') ?> value="center">Center</option>
+					<option <?php echo (($selectedpos === 'left') ? 'selected': '') ?> value="left">Left</option>
+					<option <?php echo (($selectedpos === 'right') ? 'selected': '') ?> value="right">Right</option>
+					<option <?php echo (($selectedpos === 'top') ? 'selected': '') ?> value="top">Top</option>
+				</select>
+			</div>
+			<div class="bg_row">
+				<h3>Gradient color</h3>
+				<?php 
+				$g1 = ((get_option( 'dpcl_bg_color_1' )) ? get_option( 'dpcl_bg_color_1' ) : '#000000');
+				$g2 = ((get_option( 'dpcl_bg_color_2' )) ? get_option( 'dpcl_bg_color_2' ) : 'transparent');
+				$deg = ((get_option( 'dpcl_bg_deg' )) ? get_option( 'dpcl_bg_deg' ) : '');
+				?>
+				<div style="background: linear-gradient(<?php echo (($deg) ? $deg : 45) ?>deg, <?php echo $g1 ?>, <?php echo $g2 ?>);" class="preview-color"></div>
+				<div class="colors">
+					<p><label for="dpcl_bg_color_1">First Color</label>
+					<input type="text" data-alpha-enabled="true" data-default-color="#000000" name="dpcl_bg_color_1" id="dpcl_bg_color_1" value="<?php echo $g1 ?>"></p>
+					<p><label for="dpcl_bg_color_2">Second Color</label>
+					<input type="text" data-alpha-enabled="true" data-default-color="transparent" name="dpcl_bg_color_2" id="dpcl_bg_color_2" value="<?php echo $g2 ?>"></p>
+					<p><label for="dpcl_bg_deg">Degree</label>
+					<input type="number" placeholder="45" name="dpcl_bg_deg" id="dpcl_bg_deg" value="<?php echo $deg ?>"></p>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
 	function dpcl_logo_redirection_cb(){
 		echo '<input type="url" class="widefat" name="dpcl_logo_redirection" placeholder="URL" value="'.get_option('dpcl_logo_redirection').'">';
 	}
@@ -286,6 +357,23 @@ class Divipeak {
 			}
 		</style>
 		<?php
+		$g1 = ((get_option( 'dpcl_bg_color_1' )) ? get_option( 'dpcl_bg_color_1' ) : '#000000');
+		$g2 = ((get_option( 'dpcl_bg_color_2' )) ? get_option( 'dpcl_bg_color_2' ) : 'transparent');
+		$deg = ((get_option( 'dpcl_bg_deg' )) ? get_option( 'dpcl_bg_deg' ) : '45');
+		$bgimg = ((get_option("dpcl_bg_image")) ? ', url('.get_option("dpcl_bg_image").')': '');
+		if(get_option('dpcl_bg_switch') === 'on'){
+			?>
+			<style>
+				body{
+					background-image: linear-gradient(<?php echo $deg ?>deg, <?php echo $g1 ?>,<?php echo $g2 ?>)<?php echo $bgimg ?> !important;
+					background-position: <?php echo get_option( 'dpcl_bg_position' ) ?>;
+					background-repeat: no-repeat;
+					background-size: cover;
+					min-height: 100vh;
+				}
+			</style>
+			<?php
+		}
 	}
 
 	function login_headerurl_callback(){
